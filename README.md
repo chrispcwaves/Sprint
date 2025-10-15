@@ -1,4 +1,4 @@
-# Sprint1
+# Sprint
 
 ![PyPI version](https://img.shields.io/pypi/v/Sprint1.svg)
 [![Documentation Status](https://readthedocs.org/projects/Sprint1/badge/?version=latest)](https://Sprint1.readthedocs.io/en/latest/?version=latest)
