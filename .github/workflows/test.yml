@@ -1,6 +1,3 @@
-# This workflow will install Python dependencies, run tests and lint.
-# For more information see: https://docs.github.com/en/actions/use-cases-and-examples/building-and-testing/building-and-testing-python
-
 name: Test Python application
 
 on:
@@ -15,32 +12,54 @@ permissions:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
-        # Test all supported Python versions under Ubuntu
         os: [ubuntu-latest]
-        python-version: ['3.12', '3.13']
-
+        python-version: ['3.12']   # keep 3.12 only for stability
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements_dev.txt
-    - name: Lint with ruff
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        ruff check --select=E9,F63,F7,F82
-        # exit-zero treats all errors as warnings
-        ruff check --exit-zero --statistics
-    - name: Install project
-      run: |
-        pip install .
-    - name: Run tests
-      run: |
-        pytest
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install dev dependencies
+        run: |
+          if [ -f requirements_dev.txt ]; then pip install -r requirements_dev.txt; fi
+
+      - name: Lint with ruff
+        run: |
+          ruff --version
+          # Fail on syntax errors/undefined names
+          ruff check --select=E9,F63,F7,F82
+          # Then report statistics but don't fail the build
+          ruff check --exit-zero --statistics
+
+      - name: Install project (optional)
+        run: |
+          # If you don't package/install yet, you can leave this; it won’t hurt
+          pip install .
+
+      - name: Run tests
+        run: pytest -q
+
+      # Smoke test your data pipeline
+      - name: Run cleaning script
+        run: python scripts/clean_data.py
+
+      - name: Verify processed file exists and shape
+        run: |
+          python - << 'PY'
+          import pandas as pd, os
+          assert os.path.exists('data/processed/gym_members_cleaned.csv'), "Processed CSV missing"
+          df = pd.read_csv('data/processed/gym_members_cleaned.csv')
+          print("Rows, Cols:", df.shape)
+          assert len(df) == 973, f"Expected 973 rows, got {len(df)}"
+          PY

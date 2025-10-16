@@ -1,0 +1,6 @@
+ruff
+pytest
+pandas
+matplotlib
+seaborn
+jupyter
