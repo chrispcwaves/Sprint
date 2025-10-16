@@ -1,6 +1,7 @@
 [project]
-name = "Sprint1"
-version = "n/a"
+name = "sprint"          # keep whatever you have
+version = "0.1.0"        # <-- replace "n/a" with a PEP 440 version
+# ...rest unchanged...
 description = "Gym Retention Analysis: Understanding What Keeps Members Active"
 readme = "README.md"
 authors = [
